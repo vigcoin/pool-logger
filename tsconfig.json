@@ -10,6 +10,8 @@
     "strict": true,
     "outDir": "./lib",
     "preserveConstEnums": true,
+    "strictNullChecks": false,
+    "suppressImplicitAnyIndexErrors": true,
     "removeComments": true,
     "inlineSourceMap": true,
     "typeRoots": [
