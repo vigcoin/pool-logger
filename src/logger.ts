@@ -1,23 +1,24 @@
-import * as fs from "fs";
-import { format, promisify } from "util";
-import * as dateformat from "dateformat";
-import * as clc from "cli-color";
-import * as _ from "lodash";
-import * as rimraf from "rimraf";
+import * as clc from 'cli-color';
+import * as dateformat from 'dateformat';
+import * as fs from 'fs';
+import * as _ from 'lodash';
+import * as rimraf from 'rimraf';
+import { format, promisify } from 'util';
+
+const log = console.log;
 
 export class Logger {
+  private interval: NodeJS.Timer;
+  private config = {};
+  private dir: string;
 
-  private interval: NodeJS.Timer
-  private config = {}
-  private dir: string
-
-  private pendingWrites = {}
+  private pendingWrites = {};
 
   private severity = {
-    'info': clc.blue,
-    'warn': clc.yellow,
-    'error': clc.red
-  }
+    error: clc.red,
+    info: clc.blue,
+    warn: clc.yellow,
+  };
 
   private severityLevels = ['info', 'warn', 'error'];
 
@@ -27,97 +28,112 @@ export class Logger {
     this.createDir();
   }
 
-  removeDir() {
+  public removeDir() {
     rimraf.sync(this.dir);
   }
 
-  createDir() {
+  public createDir() {
     if (!fs.existsSync(this.dir)) {
       try {
         fs.mkdirSync(this.dir);
-      }
-      catch (e) {
+      } catch (e) {
         throw e;
       }
     }
   }
 
-  stop() {
+  public stop() {
     if (this.interval) {
       clearInterval(this.interval);
     }
     this.interval = null;
   }
 
-  start(cb: Function = null) {
-    let interval = _.get(this.config, 'files.flushInterval', 1);
+  public start(cb: () => void = null) {
+    const interval = _.get(this.config, 'files.flushInterval', 1);
     this.stop();
     this.interval = setInterval(async () => {
       await this.flush();
-      cb && cb();
+      if (cb instanceof Function) {
+        console.log("inside cb");
+        cb();
+      }
     }, interval * 1000);
   }
 
-  async flush() {
-    for (var fileName in this.pendingWrites) {
-      var data = this.pendingWrites[fileName];
-      let appendFile = promisify(fs.appendFile);
+  public async flush() {
+    for (const fileName of Object.keys(this.pendingWrites)) {
+      const data = this.pendingWrites[fileName];
+      const appendFile = promisify(fs.appendFile);
       await appendFile(fileName, data);
       delete this.pendingWrites[fileName];
     }
   }
 
-  getLog(severity: string, levelString: string) {
-    let level = _.get(this.config, levelString, '');
-    console.log('level = ' + level);
-    return this.severityLevels.indexOf(severity) >= this.severityLevels.indexOf(level);
+  public getLog(severity: string, levelString: string) {
+    const level = _.get(this.config, levelString, '');
+    return (
+      this.severityLevels.indexOf(severity) >=
+      this.severityLevels.indexOf(level)
+    );
   }
 
-  append(severity: string, system: string, text: string, data: Array<string>) {
-    let fileLog = this.getLog(severity, 'files.level');
-    let consoleLog = this.getLog(severity, 'console.level');
+  public append(
+    severity: string,
+    system: string,
+    text: string,
+    data: string[]
+  ) {
+    const fileLog = this.getLog(severity, 'files.level');
+    const consoleLog = this.getLog(severity, 'console.level');
 
-    console.log(consoleLog, fileLog);
-
-
-    if (!consoleLog && !fileLog) return;
+    if (!consoleLog && !fileLog) {
+      return;
+    }
     let formattedMessage = text;
 
-    console.log("data = " + data);
     if (data) {
-      console.log('inside data');
       data.unshift(text);
       formattedMessage = format(data);
     }
 
-    let colors = _.get(this.config, 'console.colors');
+    const colors = _.get(this.config, 'console.colors');
 
     if (consoleLog) {
-      console.log(this.toLog(system, formattedMessage, colors, severity))
+      log(this.toLog(system, formattedMessage, colors, severity));
     }
 
     if (fileLog) {
-      this.appendLog(this.toFileName(system, severity), this.toLog(system, formattedMessage));
+      this.appendLog(
+        this.toFileName(system, severity),
+        this.toLog(system, formattedMessage)
+      );
     }
   }
 
-  toFileName(system: string, severity: string): string {
-    return this.dir + '/' + system + '_' + severity + '.log'
+  public toFileName(system: string, severity: string): string {
+    return this.dir + '/' + system + '_' + severity + '.log';
   }
 
-  toLog(system: string, formattedMessage: string, colorful: boolean = false, severity: string = '') {
-    let time = dateformat(new Date(), 'yyyy-mm-dd HH:MM:ss');
+  public toLog(
+    system: string,
+    formattedMessage: string,
+    colorful: boolean = false,
+    severity: string = ''
+  ) {
+    const time = dateformat(new Date(), 'yyyy-mm-dd HH:MM:ss');
     if (colorful) {
       return [
         this.severity[severity](time),
         clc.white.bold(' [' + system + '] '),
-        formattedMessage
+        formattedMessage,
       ].join('');
     }
-    return time + ' [' + system + '] ' + formattedMessage + "\n";
+    return time + ' [' + system + '] ' + formattedMessage + '\n';
   }
 
-  appendLog(filename: string, logLine: string) {
-    this.pendingWrites[filename] = (this.pendingWrites[filename] || '') + logLine;
+  public appendLog(filename: string, logLine: string) {
+    this.pendingWrites[filename] =
+      (this.pendingWrites[filename] || '') + logLine;
   }
-};
+}

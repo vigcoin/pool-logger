@@ -3,59 +3,60 @@ import { Logger } from '../src/logger';
 const logger = new Logger({});
 const colorLogger = new Logger({
   console: {
-    colors: true
-  }
+    colors: true,
+  },
 });
 
 const levelLogger = new Logger({
   files: {
-    level: 'warn'
+    level: 'warn',
   },
   console: {
     level: 'error',
-  }
+  },
 });
-
 
 const levelLogger1 = new Logger({
   files: {
-    level: 'info'
+    level: 'info',
   },
   console: {
     level: 'error',
-  }
+  },
 });
 
 const levelLogger2 = new Logger({
   files: {
-    level: 'error'
+    level: 'error',
   },
   console: {
     level: 'info',
-  }
+  },
 });
 
 const levelLogger3 = new Logger({
   files: {
-    level: 'error'
+    level: 'error',
   },
   console: {
     level: 'error',
-  }
+  },
 });
 
 test('Should greet with message', () => {
   expect(logger).toBeTruthy();
 });
 
-test('Should be able to start', (done) => {
+test('Should be able to start', done => {
   logger.start(() => {
     done();
   });
 });
 
-test('Should be able to start without callback', () => {
+test('Should be able to start without callback', (done) => {
   logger.start();
+
+  setTimeout(done, 1100);
 });
 
 test('Should be able to append data', () => {
@@ -65,7 +66,6 @@ test('Should be able to append data', () => {
 test('Should be able to append data with colors', () => {
   colorLogger.append('info', 'start', 'heoo', null);
 });
-
 
 test('Should be able to stop', () => {
   logger.stop();
@@ -83,25 +83,23 @@ test('Should be able to flush data', async () => {
   await colorLogger.flush();
 });
 
-
 test('Should be able to create dir and remove dir', () => {
-
   let dirLogger = new Logger({
     files: {
-      directory: 'logs1'
-    }
+      directory: 'logs1',
+    },
   });
   let dirLogger1 = new Logger({
     files: {
-      directory: 'logs1'
-    }
+      directory: 'logs1',
+    },
   });
 
   try {
     let dirLogger2 = new Logger({
       files: {
-        directory: '/logger'
-      }
+        directory: '/logger',
+      },
     });
   } catch (e) {
     expect(e).toBeTruthy();
@@ -110,6 +108,3 @@ test('Should be able to create dir and remove dir', () => {
   dirLogger.removeDir();
   colorLogger.removeDir();
 });
-
-
-
