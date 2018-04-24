@@ -55,7 +55,6 @@ export class Logger {
     this.interval = setInterval(async () => {
       await this.flush();
       if (cb instanceof Function) {
-        console.log('inside cb');
         cb();
       }
     }, interval * 1000);
@@ -141,14 +140,13 @@ export class Logger {
     const readdir = promisify(fs.readdir).bind(fs);
     const files = await readdir(this.dir);
 
-    var logs = {};
-    for (var i in files) {
-      var file = files[i];
-      var stats: any = fs.statSync(this.dir + '/' + file);
+    const logs = {};
+    for (const file of files) {
+      const stats: any = fs.statSync(this.dir + '/' + file);
       logs[file] = {
+        changed: Date.parse(stats.mtime) / 1000,
         size: stats.size,
-        changed: Date.parse(stats.mtime) / 1000 | 0
-      }
+      };
     }
     return logs;
   }
