@@ -55,7 +55,7 @@ export class Logger {
     this.interval = setInterval(async () => {
       await this.flush();
       if (cb instanceof Function) {
-        console.log("inside cb");
+        console.log('inside cb');
         cb();
       }
     }, interval * 1000);
@@ -135,5 +135,21 @@ export class Logger {
   public appendLog(filename: string, logLine: string) {
     this.pendingWrites[filename] =
       (this.pendingWrites[filename] || '') + logLine;
+  }
+
+  public async getStatus() {
+    const readdir = promisify(fs.readdir).bind(fs);
+    const files = await readdir(this.dir);
+
+    var logs = {};
+    for (var i in files) {
+      var file = files[i];
+      var stats: any = fs.statSync(this.dir + '/' + file);
+      logs[file] = {
+        size: stats.size,
+        changed: Date.parse(stats.mtime) / 1000 | 0
+      }
+    }
+    return logs;
   }
 }

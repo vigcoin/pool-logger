@@ -53,7 +53,7 @@ test('Should be able to start', done => {
   });
 });
 
-test('Should be able to start without callback', (done) => {
+test('Should be able to start without callback', done => {
   logger.start();
 
   setTimeout(done, 1100);
@@ -82,6 +82,13 @@ test('Should be able to flush data', async () => {
   colorLogger.append('info', 'start', 'heoo', ['soso']);
   await colorLogger.flush();
 });
+
+
+test('Should be able to getStatus', async () => {
+  const data = await levelLogger.getStatus();
+  expect(Object.keys(data).length).toBeTruthy();
+});
+
 
 test('Should be able to create dir and remove dir', () => {
   let dirLogger = new Logger({
