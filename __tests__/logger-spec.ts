@@ -88,6 +88,13 @@ test('Should be able to getStatus', async () => {
   expect(Object.keys(data).length).toBeTruthy();
 });
 
+
+test('Should be able to get dir', async () => {
+  const dir = await levelLogger.getDir();
+  expect(dir.length > 0).toBeTruthy();
+});
+
+
 test('Should be able to create dir and remove dir', () => {
   let dirLogger = new Logger({
     files: {

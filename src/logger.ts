@@ -41,6 +41,9 @@ export class Logger {
       }
     }
   }
+  public getDir() {
+    return this.dir;
+  }
 
   public stop() {
     if (this.interval) {
