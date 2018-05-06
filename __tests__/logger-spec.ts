@@ -83,16 +83,23 @@ test('Should be able to flush data', async () => {
   await colorLogger.flush();
 });
 
+test('Should format string', async () => {
+  let log = levelLogger3.append('error', 'start', '', ['soso']);
+  expect(log).toBe('soso');
+  let log1 = levelLogger3.append('error', 'start', '%s+%s', ['soso', 'ok']);
+  expect(log1).toBe('soso+ok');
+});
+
 test('Should be able to getStatus', async () => {
   const data = await levelLogger.getStatus();
   expect(Object.keys(data).length).toBeTruthy();
 });
 
-
 test('Should be able to get dir', async () => {
   const dir = await levelLogger.getDir();
   expect(dir.length > 0).toBeTruthy();
 });
+
 
 
 test('Should be able to create dir and remove dir', () => {

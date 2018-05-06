@@ -95,8 +95,10 @@ export class Logger {
     let formattedMessage = text;
 
     if (data) {
-      data.unshift(text);
-      formattedMessage = format(data);
+      if (text) {
+        data.unshift(text);
+      }
+      formattedMessage = format.apply(null, data);
     }
 
     const colors = _.get(this.config, 'console.colors');
@@ -111,6 +113,7 @@ export class Logger {
         this.toLog(system, formattedMessage)
       );
     }
+    return formattedMessage;
   }
 
   public toFileName(system: string, severity: string): string {
